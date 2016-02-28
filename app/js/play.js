@@ -109,8 +109,10 @@ IngameState.prototype = {
 
     crashSpike: function(spike, fireball){
         //this.spikes.callAll('kill');        
-        this.createSpikes();
-        
+        //this.createSpikes();
+        this.player.kill();
+        this.game.state.start('OverState');
+
     },
     collectCoins: function(player, coin){
         coin.kill();
