@@ -30,7 +30,7 @@ BootState.prototype = {
         
         // Load all assets
         
-        this.game.load.image('spike', 'assets/images/psike/spike.png');
+        this.game.load.image('spike', 'assets/images/spike.png');
         this.game.load.image('ground', 'assets/images/ground.png');
         this.game.load.image('city', 'assets/images/game_bg_city.png');
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);

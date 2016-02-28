@@ -1,15 +1,26 @@
 var IngameState = function (game) { };
+//FLAGS
 var grounded = false;
+//NUMBERS
 var jumpOnce = 0;
 var createOnce = 0;
+var spikeSpeed = 4;
+var speedIncrease = 0.2;
+//OBJECTS
 var fireball = null;
+var spike = null;
+var lastCoin = null;
+var coin = null;
+
+
 IngameState.prototype = {
     
     preload: function() {
-        this.game.load.image('spike', 'assets/images/psike/spike.png');
+        this.game.load.image('spike', 'assets/images/spike.png');        
         this.game.load.image('ground', 'assets/images/ground.png');
         this.game.load.image('city', 'assets/images/game_bg_city.png');
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
+        this.game.load.spritesheet('coins', 'assets/images/coin_copper.png', 32, 0, 8);
         this.game.load.spritesheet('player','assets/images/player.png', 100, 0, 19);
     },
     
@@ -22,6 +33,7 @@ IngameState.prototype = {
         this.createPlayer();
         this.createSpikes(1);
         this.createFireBalls();
+        this.createCoins();
 
     },
 
@@ -52,8 +64,8 @@ IngameState.prototype = {
 
     createPlayer: function(){
         this.player = this.game.add.sprite(150, this.game.world.height - 130, 'player');
-        this.player.animations.add('walk', [9,10,11,12,13,14,15,16,17,18], 15, true);
-        this.player.animations.add('run', [1,2,3,4,5,6,7,8], 10, true);
+        this.player.animations.add('walk', [9,10,11,12,13,14,15,16,17,18], 20, true);
+        this.player.animations.add('run', [1,2,3,4,5,6,7,8], 20, true);
         this.player.animations.add('jump', [0], 15, true);
         this.player.animations.add('idle', [5]);
 
@@ -69,36 +81,54 @@ IngameState.prototype = {
         this.player.body.collideWorldBounds = true;
     },
 
-    createSpikes: function(speed){
+    createSpikes: function(){
         this.spikes = this.game.add.group();
-        this.spikes.enableBody = true;        
-        var spike = this.spikes.create(640, this.game.world.height - 57.8, 'spike');
+        this.spikes.enableBody = true;  
+        spike = this.spikes.create(640, this.game.world.height - 57.8, 'spike');
         spike.scale.setTo(0.15);
         spike.anchor.setTo(1,1);
-        spike.body.gravity.x = -90 * speed;
-        createOnce = 0;
+        
     },
 
-    crashSpike: function(player, spike){
-        player.animations.play('jump');
-        //player.kill();
+    createCoins: function(){
+        this.coins = this.game.add.group();
+        this.coins.enableBody = true;
+        for(var i = 0; i<6; i++){
+            coin = this.coins.create(680 + (i * 32), this.game.world.height - 85, 'coins');
+            coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
+            coin.animations.play('circle');
+            if(i + 1 == 6){
+                lastCoin = coin;
+            }
+            //coin.position.x -= spikeSpeed;
+        }
+        // coin = this.coins.create(300, this.game.world.height - 86, 'coins');
+        // coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
+        // coin.animations.play('circle');
     },
-    crashSpikeFire: function(spike, fireball){
-        createOnce++;
-        spike.kill();
-        var lel = Math.floor((Math.random() * 10) + 1)
-        console.log(lel);
-        if(createOnce == 1){
-            this.createSpikes(1);
+
+    crashSpike: function(spike, fireball){
+        //this.spikes.callAll('kill');        
+        this.createSpikes();
+        
+    },
+    collectCoins: function(player, coin){
+        coin.kill();
+        if(coin == lastCoin){
+            this.createCoins();
         }
     },
     
+    
     update: function() {
         this.game.physics.arcade.collide(this.player, this.platforms);
-        this.game.physics.arcade.overlap(this.spikes, this.fireballs, this.crashSpikeFire, null, this);
-        //this.game.physics.arcade.overlap(this.player, this.spikes, this.crashSpike, null, this);
+        this.game.physics.arcade.overlap(this.spikes, this.player, this.crashSpike, null, this);
+        this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoins, null, this);
+        
         grounded = this.player.body.touching.down;
         this.citiBg.tilePosition.x -= 0.9;
+        spike.position.x -= spikeSpeed;
+        this.coins.position.x -= spikeSpeed;
 
         //console.log(grounded);
         if (this.cursors.up.isDown ) {
@@ -114,6 +144,9 @@ IngameState.prototype = {
             jumpOnce= 0;
             this.player.animations.play('run');
             this.player.body.velocity.x = 0;
+        }
+        if(lastCoin.world.x < 40){
+            //console.log('aylmao')
         }
     }
 };
