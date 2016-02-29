@@ -10,7 +10,7 @@ var timeleft = 15;
 var scoreStep = 1;
 var createOnce = 0;
 var spikeSpeed = 4;
-var coinsAmount = 8;
+var coinsAmount = 12;
 var diamondSpeed = 2;
 var speedIncrease = 0.2;
 //OBJECTS
@@ -53,8 +53,6 @@ IngameState.prototype = {
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.createBackGround();
         this.createGround();
-        this.coins = this.game.add.group();
-        this.coins.enableBody = true;
         this.createCoins();
         this.createExplosion();
         this.createSpikes();
@@ -133,6 +131,8 @@ IngameState.prototype = {
     },
 
     createCoins: function(){
+        this.coins = this.game.add.group();
+        this.coins.enableBody = true;
         for(var i = 0; i< coinsAmount; i++){
             coin = this.coins.create(800 + (i * 32), this.game.world.height - 85, 'coins');
             coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
@@ -141,12 +141,23 @@ IngameState.prototype = {
             if(i + 1 == coinsAmount){
                 coin.isLast = true;
                 lastCoin = coin;
+            }else{
+                coin.isLast = false;
             }
             //coin.position.x -= spikeSpeed;
         }
         // coin = this.coins.create(300, this.game.world.height - 86, 'coins');
         // coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
         // coin.animations.play('circle');
+    },
+
+    reSpawnCoins: function() {
+        var i = 0;
+        coinsAmount = Math.floor(Math.random() * (12 - 8) + 8);
+        this.coins.forEach(function (coin) {
+            coin.reset(800 + i * 32, this.game.world.height - 85);
+            i++;
+        });
     },
 
     createExplosion: function(){
@@ -182,15 +193,21 @@ IngameState.prototype = {
 
     crashFireSpike: function(spike, fireball){
         this.spikes.callAll('kill');
-        this.createSpikes();
+        //this.createSpikes();
+        //this.reSpawnSpike();
     },
+
+    reSpawnSpike: function(){
+        spike.reset(700, this.game.world.height - 57.8);
+    },
+
     collectCoins: function(player, coin){
         this.score += scoreStep;
         if(coin.isLast){
-            coin.kill();
             //this.coins.callAll('kill');
-            //this.createCoins();
-            //this.createSpikes();
+            coin.kill();
+            this.reSpawnCoins();
+            this.reSpawnSpike();
         }else{
             coin.kill();
         }
@@ -200,12 +217,14 @@ IngameState.prototype = {
 
 
     coinCrashFire: function(coin, fire){
-        var flag =coin.isLast;
+        var flag = coin.isLast;
         coin.kill();
-        if(flag){
+        if (flag) {
             console.log('lel');
             this.coins.callAll('kill');
-            this.createCoins()
+            //this.createCoins()
+            this.reSpawnSpike();
+            this.reSpawnCoins();
         }
     },
 
@@ -264,11 +283,13 @@ IngameState.prototype = {
         this.game.physics.arcade.overlap(this.coins, this.fireballs, this.coinCrashFire, null, this);
         this.game.physics.arcade.overlap(this.spikes, this.fireballs, this.crashFireSpike, null, this);
         this.game.physics.arcade.overlap(this.player, this.diamonds, this.activatePowerUp, null, this);
-        
+
         grounded = this.player.body.touching.down;
         this.citiBg.tilePosition.x -= 0.9;
-        spike.position.x -= spikeSpeed;
-        this.coins.position.x -= spikeSpeed;
+        //spike.position.x -= spikeSpeed;
+        //this.coins.position.x -= spikeSpeed;
+        this.spikes.addAll("position.x", -spikeSpeed);
+        this.coins.addAll("position.x", -spikeSpeed);
         this.explosion.x -= spikeSpeed;
 
         if (this.cursors.up.isDown ) {
@@ -294,12 +315,6 @@ IngameState.prototype = {
             jumpOnce= 0;
             this.player.animations.play('run');
             this.player.body.velocity.x = 0;
-        }
-        if(lastCoin.world.x < 40){
-            //console.log('aylmao')
-            this.coins.callAll('kill');
-            this.createCoins();
-            this.createSpikes();
         }
         if(diamond){
             diamond.position.x -= diamondSpeed; 
