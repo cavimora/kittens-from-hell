@@ -1,51 +1,77 @@
 var IngameState = function (game) { };
 //FLAGS
+var powerUp = false;
 var grounded = false;
 //NUMBERS
+var time = 0;
 var jumpOnce = 0;
+var downOnce = 0;
+var timeleft = 15;
+var scoreStep = 1;
 var createOnce = 0;
 var spikeSpeed = 4;
+var coinsAmount = 8;
+var diamondSpeed = 2;
 var speedIncrease = 0.2;
 //OBJECTS
-var fireball = null;
-var spike = null;
-var lastCoin = null;
 var coin = null;
-
+var spike = null;
+var timer = null;
+var player = null;
+var diamond = null;
+var fireball = null;
+var lastCoin = null;
+var explosionArray = null;
 
 IngameState.prototype = {
     
     preload: function() {
         this.game.load.image('spike', 'assets/images/spike.png');        
         this.game.load.image('ground', 'assets/images/ground.png');
+        this.game.load.image('diamond', 'assets/images/diamond.png');
         this.game.load.image('city', 'assets/images/game_bg_city.png');
-        this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
-        this.game.load.spritesheet('coins', 'assets/images/coin_copper.png', 32, 0, 8);
         this.game.load.spritesheet('player','assets/images/player.png', 100, 0, 19);
+        this.game.load.spritesheet('coins', 'assets/images/coin_copper.png', 32, 0, 8);
+        this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
+        this.game.load.spritesheet('explosion', 'assets/images/explosion.png', 100, 100, 81);
     },
+
+    // fillArray: function(){
+    //     var foo = [];
+    //     for(var i = 0; i<81; i){
+    //         foo.push(i);
+    //     }
+    //     return foo;
+    // },
     
     create: function() {
         this.game.world.setBounds(0, 0, 940,360);
-        this.cursors = this.game.input.keyboard.createCursorKeys();
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.cursors = this.game.input.keyboard.createCursorKeys();
         this.createBackGround();
         this.createGround();
-        this.createPlayer();
-        this.createSpikes(1);
-        this.createFireBalls();
         this.createCoins();
+        this.createExplosion();
+        this.createSpikes();
+        this.createPlayer();
+        this.createFireBalls();
+        this.score = 0;
+        this.scoreText = this.game.add.text(50, 10, 'Score: 0', { fontSize: '15px', fill: '#000' });
+        this.powerUpText = this.game.add.text(200, 10, '', { fontSize: '15px', fill: '#000' });
+        timer = game.time.create(false);
+        timer.loop(1000, this.killPowerUp, this);
 
     },
 
     createBackGround: function(){
-        this.citiBg = this.game.add.tileSprite(0, 0, this.game.stage.width/2, this.game.stage.height/2, 'city');
+        this.citiBg = this.game.add.tileSprite(0, 0, this.game.stage.width, this.game.stage.height, 'city');
     },
 
 
     createGround: function(){
         this.platforms = this.game.add.group();
         this.platforms.enableBody = true;
-        var ground = this.platforms.create(this.game.stage.width/2, this.game.world.height - 57.8, 'ground');  
+        var ground = this.platforms.create(this.game.stage.width, this.game.world.height - 57.8, 'ground');  
         ground.body.immovable = true; 
         ground.anchor.setTo(1, 0);
 
@@ -62,8 +88,15 @@ IngameState.prototype = {
         }
     },
 
+    createPowerUp: function(){
+        this.diamonds = this.game.add.group();
+        this.diamonds.enableBody = true;
+        diamond = this.diamonds.create(780, 150, 'diamond');
+
+    },
+
     createPlayer: function(){
-        this.player = this.game.add.sprite(150, this.game.world.height - 130, 'player');
+        player = this.player = this.game.add.sprite(150, this.game.world.height - 130, 'player');
         this.player.animations.add('walk', [9,10,11,12,13,14,15,16,17,18], 20, true);
         this.player.animations.add('run', [1,2,3,4,5,6,7,8], 20, true);
         this.player.animations.add('jump', [0], 15, true);
@@ -79,25 +112,28 @@ IngameState.prototype = {
         this.player.body.bounce.y = 0;
         this.player.body.gravity.y = 1500;
         this.player.body.collideWorldBounds = true;
+        player.body.setSize(25, 78, -40, -5);
     },
 
     createSpikes: function(){
         this.spikes = this.game.add.group();
         this.spikes.enableBody = true;  
-        spike = this.spikes.create(640, this.game.world.height - 57.8, 'spike');
+        spike = this.spikes.create(700, this.game.world.height - 57.8, 'spike');
         spike.scale.setTo(0.15);
         spike.anchor.setTo(1,1);
+        spike.body.setSize(180, 300, -8, 0);
         
     },
 
     createCoins: function(){
         this.coins = this.game.add.group();
         this.coins.enableBody = true;
-        for(var i = 0; i<6; i++){
-            coin = this.coins.create(680 + (i * 32), this.game.world.height - 85, 'coins');
+        for(var i = 0; i< coinsAmount; i++){
+            coin = this.coins.create(800 + (i * 32), this.game.world.height - 85, 'coins');
             coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
             coin.animations.play('circle');
-            if(i + 1 == 6){
+            //coin.body.setSize(20, 20, -35, 0);
+            if(i + 1 == coinsAmount){
                 lastCoin = coin;
             }
             //coin.position.x -= spikeSpeed;
@@ -107,48 +143,152 @@ IngameState.prototype = {
         // coin.animations.play('circle');
     },
 
-    crashSpike: function(spike, fireball){
-        //this.spikes.callAll('kill');        
-        //this.createSpikes();
-        this.player.kill();
-        this.game.state.start('OverState');
+    createExplosion: function(){
+        this.explosion = this.game.add.sprite(150, this.game.world.height-130, 'explosion');
+        this.explosion.animations.add();
+        this.explosion.anchor.setTo(0.5,0);
+        this.explosion.frame = 80;
+    },
 
+    crashSpike: function(spike, fireball){
+        if(!powerUp){
+            this.spikes.callAll('kill');        
+            this.createSpikes();
+            this.player.kill();
+            this.resetValues();
+            this.game.state.start('OverState');
+        }else{
+            this.explosion.position.x = spike.x;
+            this.explosion.position.y = spike.y;
+            this.spikes.callAll('kill');
+            this.explosion.animations.play();
+        }
+    },
+
+    resetValues: function(){
+        spikeSpeed = 4;
+        powerUp = false;
+        diamond = null;
+        timeleft = 15;
+        this.player.scale.setTo(1);
+        this.player.anchor.setTo(1,1);
+    },
+
+    crashFireSpike: function(spike, fireball){
+        this.spikes.callAll('kill');
+        //this.createSpikes();
     },
     collectCoins: function(player, coin){
         coin.kill();
+        this.score += scoreStep;
         if(coin == lastCoin){
+            this.coins.callAll('kill');
             this.createCoins();
+            this.createSpikes();
+        }
+        this.scoreText.text = 'Score: ' + this.score;
+        this.scoreCheck();
+    },
+
+    scoreCheck: function(){
+        //To increase speed
+        if(this.score % 50 == 0){
+            spikeSpeed += speedIncrease;
+            scoreStep += 1;
+            if(scoreStep == 9){
+                scoreStep--;
+            }
+        }
+        //To create the powerUp
+        if(this.score % 14 == 0){
+            if(!diamond){
+               this.createPowerUp();
+            }
         }
     },
-    
+
+    activatePowerUp: function(){
+        powerUp = true;
+        this.powerUpText.text = 'Pow: 15s';
+        this.diamonds.callAll('kill');
+        timer.start();
+        this.player.scale.setTo(1.6);
+        this.player.anchor.setTo(0.8,0.5);
+    },
+
+    killPowerUp: function(){
+        if(powerUp){
+            time++;
+            timeleft--;
+            this.powerUpText.text = 'Pow: '+ timeleft+'s';
+            if(timeleft == 0){
+                timeleft = 15;
+                diamond = null;
+                powerUp = false;
+                this.powerUpText.text = '';
+                this.player.scale.setTo(1);
+                this.player.anchor.setTo(1,1);
+            }
+        }
+    },
     
     update: function() {
         this.game.physics.arcade.collide(this.player, this.platforms);
         this.game.physics.arcade.overlap(this.spikes, this.player, this.crashSpike, null, this);
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoins, null, this);
+        this.game.physics.arcade.overlap(this.spikes, this.fireballs, this.crashFireSpike, null, this);
+        this.game.physics.arcade.overlap(this.player, this.diamonds, this.activatePowerUp, null, this);
         
         grounded = this.player.body.touching.down;
         this.citiBg.tilePosition.x -= 0.9;
         spike.position.x -= spikeSpeed;
         this.coins.position.x -= spikeSpeed;
+        this.explosion.x -= spikeSpeed;
 
-        //console.log(grounded);
         if (this.cursors.up.isDown ) {
             jumpOnce++;
             if(jumpOnce == 1){
                 this.player.animations.play('jump');
-                this.player.body.velocity.y = -450;
+                this.player.body.velocity.y = -550;
+            }
+            //this.jumpSound.play();
+        }
+        //Fall Fast
+        if (this.cursors.down.isDown && !grounded) {
+            downOnce++;
+            if(downOnce == 1){
+                //this.player.animations.play('jump');
+                this.player.body.velocity.y = 550;
             }
             //console.log(grounded);
             //this.jumpSound.play();
         }
         if (grounded){
+            downOnce=0;
             jumpOnce= 0;
             this.player.animations.play('run');
             this.player.body.velocity.x = 0;
         }
         if(lastCoin.world.x < 40){
             //console.log('aylmao')
+            this.coins.callAll('kill');
+            this.createCoins();
+            this.createSpikes();
         }
+        if(diamond){
+            diamond.position.x -= diamondSpeed; 
+        }
+        if(!explosionArray){
+            //explosionArray = this.fillArray();
+        }
+    },
+
+    render: function(){
+        // game.debug.body(this.player);
+        // game.debug.body(lastCoin);
+        // game.debug.body(spike);
+        // this.fireballs.forEachAlive(renderGroup, this);
+        // this.coins.forEachAlive(renderGroup, this);
+        // function renderGroup(member) {    game.debug.body(member);}
     }
 };
