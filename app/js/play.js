@@ -47,11 +47,14 @@ IngameState.prototype = {
     // },
     
     create: function() {
-        this.game.world.setBounds(0, 0, 940,360);
+
+        this.game.world.setBounds(0, 0, 600,360);
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.createBackGround();
         this.createGround();
+        this.coins = this.game.add.group();
+        this.coins.enableBody = true;
         this.createCoins();
         this.createExplosion();
         this.createSpikes();
@@ -130,14 +133,13 @@ IngameState.prototype = {
     },
 
     createCoins: function(){
-        this.coins = this.game.add.group();
-        this.coins.enableBody = true;
         for(var i = 0; i< coinsAmount; i++){
             coin = this.coins.create(800 + (i * 32), this.game.world.height - 85, 'coins');
             coin.animations.add('circle', [0,1,2,3,4,5,6,7], 15, true);
             coin.animations.play('circle');
             //coin.body.setSize(20, 20, -35, 0);
             if(i + 1 == coinsAmount){
+                coin.isLast = true;
                 lastCoin = coin;
             }
             //coin.position.x -= spikeSpeed;
@@ -180,18 +182,31 @@ IngameState.prototype = {
 
     crashFireSpike: function(spike, fireball){
         this.spikes.callAll('kill');
-        //this.createSpikes();
+        this.createSpikes();
     },
     collectCoins: function(player, coin){
-        coin.kill();
         this.score += scoreStep;
-        if(coin == lastCoin){
-            this.coins.callAll('kill');
-            this.createCoins();
-            this.createSpikes();
+        if(coin.isLast){
+            coin.kill();
+            //this.coins.callAll('kill');
+            //this.createCoins();
+            //this.createSpikes();
+        }else{
+            coin.kill();
         }
         this.scoreText.text = 'Score: ' + this.score;
         this.scoreCheck();
+    },
+
+
+    coinCrashFire: function(coin, fire){
+        var flag =coin.isLast;
+        coin.kill();
+        if(flag){
+            console.log('lel');
+            this.coins.callAll('kill');
+            this.createCoins()
+        }
     },
 
     scoreCheck: function(){
@@ -221,7 +236,7 @@ IngameState.prototype = {
         background = game.add.sprite(0, 0);
         background.width = 800;
         background.height = 600;
-        //background.filters = [filter];
+        background.filters = [filter];
     },
 
     killPowerUp: function(){
@@ -240,11 +255,13 @@ IngameState.prototype = {
             }
         }
     },
+
     
     update: function() {
         this.game.physics.arcade.collide(this.player, this.platforms);
         this.game.physics.arcade.overlap(this.spikes, this.player, this.crashSpike, null, this);
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoins, null, this);
+        this.game.physics.arcade.overlap(this.coins, this.fireballs, this.coinCrashFire, null, this);
         this.game.physics.arcade.overlap(this.spikes, this.fireballs, this.crashFireSpike, null, this);
         this.game.physics.arcade.overlap(this.player, this.diamonds, this.activatePowerUp, null, this);
         
