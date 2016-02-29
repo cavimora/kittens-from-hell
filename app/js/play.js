@@ -21,6 +21,7 @@ var player = null;
 var diamond = null;
 var fireball = null;
 var lastCoin = null;
+var background = null;
 var explosionArray = null;
 
 IngameState.prototype = {
@@ -34,6 +35,7 @@ IngameState.prototype = {
         this.game.load.spritesheet('coins', 'assets/images/coin_copper.png', 32, 0, 8);
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
         this.game.load.spritesheet('explosion', 'assets/images/explosion.png', 100, 100, 81);
+        this.game.load.script('filter', 'https://cdn.rawgit.com/photonstorm/phaser/master/filters/Fire.js');
     },
 
     // fillArray: function(){
@@ -55,6 +57,8 @@ IngameState.prototype = {
         this.createSpikes();
         this.createPlayer();
         this.createFireBalls();
+        filter = game.add.filter('Fire', 800, 600);
+        filter.alpha = 0.0;
         this.score = 0;
         this.scoreText = this.game.add.text(50, 10, 'Score: 0', { fontSize: '15px', fill: '#000' });
         this.powerUpText = this.game.add.text(200, 10, '', { fontSize: '15px', fill: '#000' });
@@ -214,6 +218,10 @@ IngameState.prototype = {
         timer.start();
         this.player.scale.setTo(1.6);
         this.player.anchor.setTo(0.8,0.5);
+        background = game.add.sprite(0, 0);
+        background.width = 800;
+        background.height = 600;
+        //background.filters = [filter];
     },
 
     killPowerUp: function(){
@@ -228,6 +236,7 @@ IngameState.prototype = {
                 this.powerUpText.text = '';
                 this.player.scale.setTo(1);
                 this.player.anchor.setTo(1,1);
+                background.filters = null;
             }
         }
     },
@@ -281,6 +290,7 @@ IngameState.prototype = {
         if(!explosionArray){
             //explosionArray = this.fillArray();
         }
+        filter.update();
     },
 
     render: function(){
