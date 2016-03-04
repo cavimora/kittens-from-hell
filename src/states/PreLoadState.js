@@ -19,12 +19,13 @@ class PreLoadState extends Phaser.State{
         this.game.load.onLoadComplete.add(this.loadComplete, this);
         
         // Load all assets       
-        this.game.load.image('spike', 'assets/images/spike.png');        
+        // this.game.load.image('spike', 'assets/images/spike.png');        
         this.game.load.image('ground', 'assets/images/ground.png');
+        this.game.load.audio('pickup', 'assets/sounds/pickup.wav');
         this.game.load.image('diamond', 'assets/images/diamond.png');
         this.game.load.image('city', 'assets/images/game_bg_city.png');
         this.game.load.spritesheet('player','assets/images/player.png', 100, 0, 19);
-        this.game.load.spritesheet('coins', 'assets/images/coin_copper.png', 32, 0, 8);
+        this.game.load.spritesheet('coin', 'assets/images/coin_copper.png', 32, 0, 8);
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
         this.game.load.spritesheet('explosion', 'assets/images/explosion.png', 100, 100, 81);
         this.game.load.script('filter', 'https://cdn.rawgit.com/photonstorm/phaser/master/filters/Fire.js');
