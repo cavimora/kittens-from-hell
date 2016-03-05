@@ -1,5 +1,6 @@
 //IMPORTS
 //CONSTANTS
+//Coins that we'll have to play with, killing a reviving use this when you have a item that can be created several times.
 const COIN_POOL = 40;
 
 //CLASS DEFINITION
@@ -15,6 +16,7 @@ class CoinGroupObject extends Phaser.Group{
 	} 
 
 	_generateCoins(game){
+		//Your code will look neat and clean this way
 		this.createMultiple(COIN_POOL, 'coin');
 		this.setAll('anchor.x', 0.5);
         this.setAll('anchor.y', 0.5);
