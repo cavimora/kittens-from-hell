@@ -35,6 +35,9 @@ class UIObject extends Phaser.Group{
 		this.background.filters = null;	
 	}
 
+	update(){
+		this.filter.update();
+	}
 
 }
 export default UIObject;

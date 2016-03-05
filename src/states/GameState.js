@@ -6,14 +6,17 @@ import Pow from 'objects/PowerUpObject';
 import Cat from 'objects/CatObject';
 import UI from 'objects/UIObject';
 //CONSTANTS
-const COIN_MIN = 7;
-const COIN_MAX = 13;
-const TIME_MIN = 7;
-const TIME_MAX = 11;
+const COIN_MIN = 13;
+const COIN_MAX = 23;
+const TIME_COIN_MIN = 7;
+const TIME_COIN_MAX = 11;
+const TIME_SPIKE_MIN = 7;
+const TIME_SPIKE_MAX = 11;
 //STATE DEFINITION
 class GameState extends Phaser.State {
 	
 	create() {
+		let spawnSpikesTime = Math.floor(Math.random() * (TIME_SPIKE_MAX - TIME_SPIKE_MIN) + TIME_SPIKE_MIN);
 		this.game.world.setBounds(0, 0, 1100, 360);
 		this.declareVariables();
 		this.createControls();
@@ -24,12 +27,12 @@ class GameState extends Phaser.State {
 		this.ui.onNormal.add(this.endPow, this);
 	}
 	createObjects(){
-		this.spikes = new Spike(this.game);
 		this.world = new World(this.game);
 		this.coins = new Coins(this.game);		
 		this.player = new Cat(this.game);
 		this.ui = new UI(this.game, 0);
 		this.pows = new Pow(this.game);
+		this.spikes = new Spike(this.game);
 	}
 
 	createExplosions(){
@@ -48,7 +51,7 @@ class GameState extends Phaser.State {
         this.explosionSounds.push(this.game.add.audio('explosion'));
         this.explosionSounds.push(this.game.add.audio('explosion2'));
         this.explosionSounds.push(this.game.add.audio('explosion3'));
-    },
+    }
 
 	declareVariables(){
 		this.spawnCoinsTime = 7;
@@ -68,14 +71,15 @@ class GameState extends Phaser.State {
 	manageCoins(){
 		this.coinAmount = Math.floor(Math.random() * (COIN_MAX - COIN_MIN) + COIN_MIN);
 		this.coins.spawnCoins(this.coinAmount);
-		let spawnCoinsTime = Math.floor(Math.random() * (TIME_MAX - TIME_MIN) + TIME_MIN);
+		let spawnCoinsTime = Math.floor(Math.random() * (TIME_COIN_MAX - TIME_COIN_MIN) + TIME_COIN_MIN);
 		this.game.time.events.add(Phaser.Timer.SECOND * spawnCoinsTime, this.manageCoins, this);
 	}
 
 	manageSpike(){
-		this.spikes.spawnCoins(this.coinAmount);
-		let spawnCoinsTime = Math.floor(Math.random() * (TIME_MAX - TIME_MIN) + TIME_MIN);
-		this.game.time.events.add(Phaser.Timer.SECOND * spawnCoinsTime, this.manageCoins, this);	
+		this.spikes.spawnSpike();
+		this.coins.addObstacle(this.spikes._lastAlive.position.x);
+		let spawnSpikesTime = Math.floor(Math.random() * (TIME_SPIKE_MAX - TIME_SPIKE_MIN) + TIME_SPIKE_MIN);
+		this.game.time.events.add(Phaser.Timer.SECOND * spawnSpikesTime, this.manageSpike, this);	
 	}
 
 
@@ -99,11 +103,18 @@ class GameState extends Phaser.State {
 		this.player.changeScale();
 		this.ui.removeFilter();
 	}
+
+	crashSpike(){
+		if(this.player.powerUp){
+
+		}
+	}
 	//In this update we only define what will happen in the collisions of the objects
 	update(){
 		//this.game.world.bringToTop(this.player);
 		this.game.physics.arcade.collide(this.player, this.world);
 		this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoins, null, this);
+		this.game.physics.arcade.overlap(this.player, this.spikes, this.crashSpike, null, this);
 		this.game.physics.arcade.overlap(this.player, this.pows, this.activatePow, null, this);
 
 		this.player.pressingUp = this.controls.up.isDown;
@@ -116,8 +127,11 @@ class GameState extends Phaser.State {
 	}
 
 	render(){
-		this.game.debug.body(this.player);
-		// this.game.debug.body(this.world.ground);
+		// if(this.spikes._lastAlive){
+		// 	this.game.debug.body(this.spikes._lastAlive);
+		// }
+		this.game.debug.body(this.coins);
+		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
 	}
 
 }
