@@ -19,7 +19,7 @@ class PreLoadState extends Phaser.State{
         this.game.load.onLoadComplete.add(this.loadComplete, this);
         
         // Load all assets       
-        // this.game.load.image('spike', 'assets/images/spike.png');        
+        this.game.load.image('spike', 'assets/images/spike.png');        
         this.game.load.image('ground', 'assets/images/ground.png');
         this.game.load.audio('pickup', 'assets/sounds/pickup.wav');
         this.game.load.image('diamond', 'assets/images/diamond.png');

@@ -18,8 +18,10 @@ class GameState extends Phaser.State {
 		this.declareVariables();
 		this.createControls();
 		this.createObjects();
-		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.coinManager, this);
+		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.manageCoins, this);
+		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.manageSpike, this);
 		this.game.world.camera.position.set(0);
+		this.ui.onNormal.add(this.endPow, this);
 	}
 	createObjects(){
 		this.spikes = new Spike(this.game);
@@ -27,9 +29,26 @@ class GameState extends Phaser.State {
 		this.coins = new Coins(this.game);		
 		this.player = new Cat(this.game);
 		this.ui = new UI(this.game, 0);
-		this.ui.onNormal.add(this.endPow, this);
 		this.pows = new Pow(this.game);
 	}
+
+	createExplosions(){
+        this.explosions = this.game.add.group();
+        this.explosions.createMultiple(4, 'explosion-1');
+        this.explosions.setAll('anchor.x', 0.5);
+        this.explosions.setAll('anchor.y', 0.5);
+        this.explosions.setAll('scale.x', 2);
+        this.explosions.setAll('scale.y', 2);
+        this.explosions.setAll('smoothed', false);
+        this.explosions.forEach(function(item) {
+            item.animations.add();
+            item.animations.currentAnim.onComplete.add(function () { item.kill(); });
+        });
+        this.explosionSounds = [];
+        this.explosionSounds.push(this.game.add.audio('explosion'));
+        this.explosionSounds.push(this.game.add.audio('explosion2'));
+        this.explosionSounds.push(this.game.add.audio('explosion3'));
+    },
 
 	declareVariables(){
 		this.spawnCoinsTime = 7;
@@ -46,12 +65,19 @@ class GameState extends Phaser.State {
         });
 	}
 
-	coinManager(){
+	manageCoins(){
 		this.coinAmount = Math.floor(Math.random() * (COIN_MAX - COIN_MIN) + COIN_MIN);
 		this.coins.spawnCoins(this.coinAmount);
 		let spawnCoinsTime = Math.floor(Math.random() * (TIME_MAX - TIME_MIN) + TIME_MIN);
-		this.game.time.events.add(Phaser.Timer.SECOND * spawnCoinsTime, this.coinManager, this);
+		this.game.time.events.add(Phaser.Timer.SECOND * spawnCoinsTime, this.manageCoins, this);
 	}
+
+	manageSpike(){
+		this.spikes.spawnCoins(this.coinAmount);
+		let spawnCoinsTime = Math.floor(Math.random() * (TIME_MAX - TIME_MIN) + TIME_MIN);
+		this.game.time.events.add(Phaser.Timer.SECOND * spawnCoinsTime, this.manageCoins, this);	
+	}
+
 
 	collectCoins(player, coin){
 		coin.kill();
@@ -65,11 +91,13 @@ class GameState extends Phaser.State {
 		this.ui.setPow();
 		this.player.powerUp = true;
 		this.player.changeScale();
+		this.ui.activateFilter();
 	}
 
 	endPow(){
 		this.player.powerUp = false;
 		this.player.changeScale();
+		this.ui.removeFilter();
 	}
 	//In this update we only define what will happen in the collisions of the objects
 	update(){
