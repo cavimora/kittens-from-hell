@@ -50,7 +50,7 @@ class CoinGroupObject extends Phaser.Group{
 
 	addObstacle(cordX){
 		let cont = 0;
-		let pixels = 49;
+		let pixels = 45;
 		let limitL = cordX - pixels;
 		let limitR = cordX + pixels;
 		this._flag = false;

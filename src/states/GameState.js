@@ -27,6 +27,7 @@ class GameState extends Phaser.State {
 		this.ui.onNormal.add(this.endPow, this);
 	}
 	createObjects(){
+		this.createExplosions();
 		this.world = new World(this.game);
 		this.coins = new Coins(this.game);		
 		this.player = new Cat(this.game);
@@ -36,17 +37,11 @@ class GameState extends Phaser.State {
 	}
 
 	createExplosions(){
-        this.explosions = this.game.add.group();
-        this.explosions.createMultiple(4, 'explosion-1');
-        this.explosions.setAll('anchor.x', 0.5);
-        this.explosions.setAll('anchor.y', 0.5);
-        this.explosions.setAll('scale.x', 2);
-        this.explosions.setAll('scale.y', 2);
-        this.explosions.setAll('smoothed', false);
-        this.explosions.forEach(function(item) {
-            item.animations.add();
-            item.animations.currentAnim.onComplete.add(function () { item.kill(); });
-        });
+        this.explosion = this.game.add.sprite(150, this.game.world.height-130, 'explosion');
+		this.explosion.animations.add();
+        this.explosion.anchor.setTo(0.5,0);
+        this.explosion.frame = 80;
+
         this.explosionSounds = [];
         this.explosionSounds.push(this.game.add.audio('explosion'));
         this.explosionSounds.push(this.game.add.audio('explosion2'));
@@ -104,8 +99,15 @@ class GameState extends Phaser.State {
 		this.ui.removeFilter();
 	}
 
-	crashSpike(){
+	crashSpike(player, spike){
 		if(this.player.powerUp){
+			this.explosion.position.x = spike.x;
+            this.explosion.position.y = spike.y;
+            this.explosion.animations.play();
+            spike.kill();
+			//explosion.body.velocity.x = - this.spikes.spikeSpeed;
+			this.explosionSounds[Math.floor(Math.random() * this.explosionSounds.length)].play();
+		}else{
 
 		}
 	}
@@ -130,7 +132,7 @@ class GameState extends Phaser.State {
 		// if(this.spikes._lastAlive){
 		// 	this.game.debug.body(this.spikes._lastAlive);
 		// }
-		this.game.debug.body(this.coins);
+		this.game.debug.body(this.explosion);
 		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
 	}
 
