@@ -14,7 +14,7 @@ class UIObject extends Phaser.Group{
 		this.textScore.text = `Score: ${score}`;
 	}
 
-	setPow(player){
+	setPow(){
 		if(this.powerTime >= 0){
 			this.textPow.text = `Pow: ${this.powerTime}s`;
 			this.powerTime--;

@@ -27,26 +27,14 @@ class GameState extends Phaser.State {
 		this.ui.onNormal.add(this.endPow, this);
 	}
 	createObjects(){
-		this.createExplosions();
 		this.world = new World(this.game);
 		this.coins = new Coins(this.game);		
 		this.player = new Cat(this.game);
 		this.ui = new UI(this.game, 0);
 		this.pows = new Pow(this.game);
 		this.spikes = new Spike(this.game);
+		this.createExplosions();
 	}
-
-	createExplosions(){
-        this.explosion = this.game.add.sprite(150, this.game.world.height-130, 'explosion');
-		this.explosion.animations.add();
-        this.explosion.anchor.setTo(0.5,0);
-        this.explosion.frame = 80;
-
-        this.explosionSounds = [];
-        this.explosionSounds.push(this.game.add.audio('explosion'));
-        this.explosionSounds.push(this.game.add.audio('explosion2'));
-        this.explosionSounds.push(this.game.add.audio('explosion3'));
-    }
 
 	declareVariables(){
 		this.spawnCoinsTime = 7;
@@ -101,16 +89,29 @@ class GameState extends Phaser.State {
 
 	crashSpike(player, spike){
 		if(this.player.powerUp){
-			this.explosion.position.x = spike.x;
-            this.explosion.position.y = spike.y;
+			this.explosion.position.x = spike.body.x;
+            this.explosion.position.y = spike.body.y - (spike.body.y / 100/15);
+            this.explosion.body.velocity.x = -this.spikes.spikeSpeed;
             this.explosion.animations.play();
-            spike.kill();
-			//explosion.body.velocity.x = - this.spikes.spikeSpeed;
-			this.explosionSounds[Math.floor(Math.random() * this.explosionSounds.length)].play();
+			let explosionIndex = Math.floor(Math.random() * this.explosionSounds.length);
+			this.explosionSounds[explosionIndex].play();
+			spike.kill();
 		}else{
 
 		}
 	}
+	createExplosions(){
+        this.explosion = this.game.add.sprite(150, this.game.world.height-130, 'explosion-sprite');
+        this.game.physics.arcade.enable(this.explosion);
+        this.explosion.anchor.setTo(0.5,0);
+        this.explosion.enableBody = true;
+		this.explosion.animations.add();
+		this.explosion.frame = 80;
+        this.explosionSounds = [];
+        this.explosionSounds.push(this.game.add.audio('explosion'));
+        this.explosionSounds.push(this.game.add.audio('explosion2'));
+        this.explosionSounds.push(this.game.add.audio('explosion3'));
+    }
 	//In this update we only define what will happen in the collisions of the objects
 	update(){
 		//this.game.world.bringToTop(this.player);
@@ -132,7 +133,7 @@ class GameState extends Phaser.State {
 		// if(this.spikes._lastAlive){
 		// 	this.game.debug.body(this.spikes._lastAlive);
 		// }
-		this.game.debug.body(this.explosion);
+		// this.game.debug.body(this.explosion);
 		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
 	}
 

@@ -22,11 +22,11 @@ class PreLoadState extends Phaser.State{
         this.game.load.image('spike', 'assets/images/spike.png');        
         this.game.load.image('ground', 'assets/images/ground.png');
         this.game.load.audio('pickup', 'assets/sounds/pickup.wav');
-        this.game.load.audio('explosion', 'assets/sounds/explosion.wav');
-        this.game.load.audio('explosion2', 'assets/sounds/explosion2.wav');
-        this.game.load.audio('explosion3', 'assets/sounds/explosion3.wav');
         this.game.load.image('diamond', 'assets/images/diamond.png');
         this.game.load.image('city', 'assets/images/game_bg_city.png');
+        this.game.load.audio('explosion', 'assets/sounds/explosion.wav');
+        this.game.load.audio('explosion3', 'assets/sounds/explosion3.wav');
+        this.game.load.audio('explosion2', 'assets/sounds/explosion2.wav');
         this.game.load.spritesheet('player','assets/images/player.png', 100, 0, 19);
         this.game.load.spritesheet('coin', 'assets/images/coin_copper.png', 32, 0, 8);
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);

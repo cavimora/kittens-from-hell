@@ -17,10 +17,8 @@ class PowerUpObject extends Phaser.Group{
         this.setAll('position.x', 200);
         this.setAll('position.y', 200);
         this.forEach(function(_pow){
-        	//_pow.powPickUp = game.add.audio('pickup');
         	_pow.events.onKilled.add(function(pow){
-        		//coin.coinPickUp.play();
-        		console.log('Pow');
+        		
         	});
         });
 	}
