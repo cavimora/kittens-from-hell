@@ -1,10 +1,10 @@
 //IMPORTS
-import World from 'objects/WorldGroupObject';
-import Coins from 'objects/CoinGroupObject';
-import Spike from 'objects/SpikeObject';
-import Pow from 'objects/PowerUpObject';
-import Cat from 'objects/CatObject';
-import UI from 'objects/UIObject';
+import World from '../objects/WorldGroupObject';
+import Coins from '../objects/CoinGroupObject';
+import Spike from '../objects/SpikeObject';
+import Pow from '../objects/PowerUpObject';
+import Cat from '../objects/CatObject';
+import UI from '../objects/UIObject';
 //CONSTANTS
 const COIN_MIN = 13;
 const COIN_MAX = 23;

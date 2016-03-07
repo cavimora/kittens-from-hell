@@ -1,6 +1,6 @@
-import GameState from 'states/GameState';
-import BootState from 'states/BootState';
-import PreLoadState from 'states/PreLoadState';
+import GameState from './states/GameState';
+import BootState from './states/BootState';
+import PreLoadState from './states/PreLoadState';
 
 class Game extends Phaser.Game {
 
