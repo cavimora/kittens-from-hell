@@ -1,1 +1,1 @@
-##Kittens from Hell (666)
+##Kittens from Hell
