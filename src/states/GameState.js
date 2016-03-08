@@ -18,6 +18,7 @@ let THISGAME = null;
 class GameState extends Phaser.State {
 	
 	create() {
+		// let neonate = this.game.add.neonate();
 		let spawnSpikesTime = Math.floor(Math.random() * (TIME_SPIKE_MAX - TIME_SPIKE_MIN) + TIME_SPIKE_MIN);
 		this.game.world.setBounds(0, 0, 1100, 360);
 		this.declareVariables();
@@ -36,6 +37,7 @@ class GameState extends Phaser.State {
 				THISGAME.game.state.start('GameOverState');
 			}
 		});
+		this.addQuake();
 	}
 	createObjects(){
 		this.world = new World(this.game);
@@ -141,6 +143,31 @@ class GameState extends Phaser.State {
 		// 	this.game.debug.body(this.explosions._lastAlive);
 		// }
 		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
+	}
+
+	addQuake() {
+ 		// define the camera offset for the quake
+		let rumbleOffset = 10;
+		// we need to move according to the camera's current position
+		let properties = {
+			x: this.game.camera.x - rumbleOffset
+		};
+		// we make it a relly fast movement
+		let duration = 100;
+		// because it will repeat
+		let repeat = 4;
+		// we use bounce in-out to soften it a little bit
+		let ease = Phaser.Easing.Bounce.InOut;
+		let autoStart = false;
+		// a little delay because we will run it indefinitely
+		let delay = 1000;
+		// we want to go back to the original position
+		let yoyo = true;
+		// this.quake = this.game.add.neonate(this.game.camera).to(properties, duration, ease, autoStart, delay, 4, yoyo);
+		// // we're using this line for the example to run indefinitely
+		// this.quake.onComplete.addOnce(this.addQuake);
+		// // let the earthquake begins
+		// this.quake.start();
 	}
 
 }
