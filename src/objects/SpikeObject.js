@@ -2,13 +2,14 @@ const SPIKE_POOL = 20;
 class SpikeObject extends Phaser.Group{
 	constructor(game){
 		super(game);
-		this.spikeSpeed = 150;
+		this.spikeSpeed = 200;
 		this.enableBody = true;
 		this.physicsBodyType = Phaser.Physics.ARCADE;
 		this._generateSpikes(game);
 		this.setAll('outOfBoundsKill', true);
     	this.setAll('checkWorldBounds', true);
     	this._lastAlive = null;
+    	this.keepSpawning = true;
 	}
 	_generateSpikes(game){
 		this.createMultiple(SPIKE_POOL, 'spike');
@@ -28,10 +29,16 @@ class SpikeObject extends Phaser.Group{
 	}
 
 	spawnSpike(){
-		let activeSpike = this.getFirstDead();
-		activeSpike.reset(640, 330);
-		activeSpike.body.velocity.x = -this.spikeSpeed;
-		this._lastAlive = activeSpike;
+		if(this.keepSpawning){
+			let activeSpike = this.getFirstDead();
+			activeSpike.reset(640, 330);
+			activeSpike.body.velocity.x = -this.spikeSpeed;
+			this._lastAlive = activeSpike;
+		}
+	}
+
+	setSpikeSpeed(speed){
+		this.spikeSpeed = speed;
 	}
 
 	

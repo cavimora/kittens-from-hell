@@ -1,4 +1,5 @@
 //IMPORTS
+import Explosion from '../objects/ExplosionGroupObject'
 import World from '../objects/WorldGroupObject';
 import Coins from '../objects/CoinGroupObject';
 import Spike from '../objects/SpikeObject';
@@ -8,11 +9,12 @@ import UI from '../objects/UIObject';
 //CONSTANTS
 const COIN_MIN = 13;
 const COIN_MAX = 23;
-const TIME_COIN_MIN = 7;
-const TIME_COIN_MAX = 11;
-const TIME_SPIKE_MIN = 7;
-const TIME_SPIKE_MAX = 11;
+const TIME_COIN_MIN = 5;
+const TIME_COIN_MAX = 8;
+const TIME_SPIKE_MIN = 5;
+const TIME_SPIKE_MAX = 8;
 //STATE DEFINITION
+let THISGAME = null;
 class GameState extends Phaser.State {
 	
 	create() {
@@ -25,15 +27,25 @@ class GameState extends Phaser.State {
 		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.manageSpike, this);
 		this.game.world.camera.position.set(0);
 		this.ui.onNormal.add(this.endPow, this);
+		this.dieOnce = true;
+		THISGAME = this;
+		this.player.playerDead.add(function(){
+			if(THISGAME.dieOnce){
+				// THISGAME.world.setTileSpeed(0);
+				THISGAME.dieOnce = false;
+				THISGAME.game.state.start('GameOverState');
+			}
+		});
 	}
 	createObjects(){
 		this.world = new World(this.game);
 		this.coins = new Coins(this.game);		
-		this.player = new Cat(this.game);
 		this.ui = new UI(this.game, 0);
 		this.pows = new Pow(this.game);
+		this.explosions = new Explosion(this.game);
 		this.spikes = new Spike(this.game);
-		this.createExplosions();
+		this.player = new Cat(this.game);
+		this.ui.createInGameUI(0);
 	}
 
 	declareVariables(){
@@ -60,7 +72,7 @@ class GameState extends Phaser.State {
 
 	manageSpike(){
 		this.spikes.spawnSpike();
-		this.coins.addObstacle(this.spikes._lastAlive.position.x);
+		this.coins.addObstacle(this.spikes._lastAlive.x);
 		let spawnSpikesTime = Math.floor(Math.random() * (TIME_SPIKE_MAX - TIME_SPIKE_MIN) + TIME_SPIKE_MIN);
 		this.game.time.events.add(Phaser.Timer.SECOND * spawnSpikesTime, this.manageSpike, this);	
 	}
@@ -89,29 +101,21 @@ class GameState extends Phaser.State {
 
 	crashSpike(player, spike){
 		if(this.player.powerUp){
-			this.explosion.position.x = spike.body.x;
-            this.explosion.position.y = spike.body.y - (spike.body.y / 100/15);
-            this.explosion.body.velocity.x = -this.spikes.spikeSpeed;
-            this.explosion.animations.play();
-			let explosionIndex = Math.floor(Math.random() * this.explosionSounds.length);
-			this.explosionSounds[explosionIndex].play();
+			// let explosionIndex = Math.floor(Math.random() * this.explosionSounds.length);
+			// this.explosionSounds[explosionIndex].play();
+			this.explosions.spawnExplosion(spike);
 			spike.kill();
 		}else{
-
+			this.spikes.keepSpawning = false;
+			this.coins.keepSpawning = false;
+			this.coins.callAll('kill');
+			this.spikes.callAll('kill');
+			this.world.setTileSpeed(0);
+			this.coins.setCoinSpeed(50);
+			this.spikes.setSpikeSpeed(50);
+			this.player.killPlayer();
 		}
 	}
-	createExplosions(){
-        this.explosion = this.game.add.sprite(150, this.game.world.height-130, 'explosion-sprite');
-        this.game.physics.arcade.enable(this.explosion);
-        this.explosion.anchor.setTo(0.5,0);
-        this.explosion.enableBody = true;
-		this.explosion.animations.add();
-		this.explosion.frame = 80;
-        this.explosionSounds = [];
-        this.explosionSounds.push(this.game.add.audio('explosion'));
-        this.explosionSounds.push(this.game.add.audio('explosion2'));
-        this.explosionSounds.push(this.game.add.audio('explosion3'));
-    }
 	//In this update we only define what will happen in the collisions of the objects
 	update(){
 		//this.game.world.bringToTop(this.player);
@@ -133,7 +137,9 @@ class GameState extends Phaser.State {
 		// if(this.spikes._lastAlive){
 		// 	this.game.debug.body(this.spikes._lastAlive);
 		// }
-		// this.game.debug.body(this.explosion);
+		// if(this.explosions._lastAlive){
+		// 	this.game.debug.body(this.explosions._lastAlive);
+		// }
 		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
 	}
 

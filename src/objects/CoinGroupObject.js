@@ -7,13 +7,13 @@ const COIN_POOL = 40;
 class CoinGroupObject extends Phaser.Group{
 	constructor(game){
 		super(game);
-		this.coinSpeed = 150;
+		this.coinSpeed = 200;
 		this.enableBody = true;
 		this.physicsBodyType = Phaser.Physics.ARCADE;
 		this._generateCoins(game);
 		this.setAll('outOfBoundsKill', true);
     	this.setAll('checkWorldBounds', true);
-    	this._flag = true;
+    	this.keepSpawning = true;
 	} 
 
 	_generateCoins(game){
@@ -34,11 +34,13 @@ class CoinGroupObject extends Phaser.Group{
 	}
 
 	spawnCoins(amount){
-		for(let i = 0; i < amount; i++){
-			let coin = this.getFirstDead();
-			if(coin){
-				coin.reset(600 + (i * 15), 315);
-				coin.body.velocity.x = -this.coinSpeed;
+		if(this.keepSpawning){
+			for(let i = 0; i < amount; i++){
+				let coin = this.getFirstDead();
+				if(coin){
+					coin.reset(600 + (i * 15), 315);
+					coin.body.velocity.x = -this.coinSpeed;
+				}
 			}
 		}
 	}
@@ -53,24 +55,26 @@ class CoinGroupObject extends Phaser.Group{
 		let pixels = 45;
 		let limitL = cordX - pixels;
 		let limitR = cordX + pixels;
-		this._flag = false;
+		let log = "";
 		this.forEach(function(coin){
 			let isLeft = coin.x <= cordX && coin.x >= limitL;
 			let isRight = coin.x >= cordX && coin.x <= limitR;
 			if(isLeft){
 				cont++;
 				coin.y = coin.y - cont * 25
-				
+				log += `L: ${cont}\n`;
 			}else if(isRight){
 				cont--;
 				coin.y = coin.y - cont * 25
+				log += `R: ${cont}\n`;
 				
 			}else if(isLeft && isRight){
 				cont++
 				coin.y = coin.y - cont * 25
+				log += `C: ${cont}\n`;
 			}
-
 		});
+		// console.log(log);
 	}
 }
 export default CoinGroupObject;

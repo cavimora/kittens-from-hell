@@ -2,14 +2,19 @@ class UIObject extends Phaser.Group{
 	constructor(game, score){
 		super(game);
 		this._game = game;
+	}
+
+	createInGameUI(score){
 		this.powerTime = 15;
-		this.textScore = game.add.text(20, 20, `Score: ${score}`, { fontSize: '32px', fill: 'rgb(50, 75, 84)' });
-		this.textPow = game.add.text(450, 20, ``, { fontSize: '32px', fill: '#FF0000' });
+		this.textScore = this._game.add.text(20, 20, `Score: ${score}`, { fontSize: '32px', fill: 'rgb(50, 75, 84)' });
+		this.textPow = this._game.add.text(450, 20, ``, { fontSize: '32px', fill: '#FF0000' });
 		this.add(this.textScore);
+		this.add(this.textPow);
 		this.onNormal = new Phaser.Signal();
-		this.filter = game.add.filter('Fire', 800, 600);
+		this.filter = this._game.add.filter('Fire', 800, 600);
 		this.filter.alpha = 0.0;
 	}
+
 	updateScore(score){
 		this.textScore.text = `Score: ${score}`;
 	}

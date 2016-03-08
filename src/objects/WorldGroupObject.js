@@ -9,11 +9,16 @@ class WorldGroupObject extends Phaser.Group{
 		this.ground.body.setSize(600, 90, 0, 30);
 		this.add(this.bg);
 		this.add(this.ground);
+		this.tileSpeed = 1;
 
 	}
 
+	setTileSpeed(speed){
+		this.tileSpeed = speed;		
+	}
+
 	update(){
-		this.bg.tilePosition.x -= 1;
+		this.bg.tilePosition.x -= this.tileSpeed;
 	}
 }
 export default WorldGroupObject;
