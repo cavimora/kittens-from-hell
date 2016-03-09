@@ -28,7 +28,7 @@ class PreLoadState extends Phaser.State{
         this.game.load.audio('explosion3', 'assets/sounds/explosion3.wav');
         this.game.load.audio('explosion2', 'assets/sounds/explosion2.wav');
         this.game.load.spritesheet('player','assets/images/cat.png', 100, 0, 19);
-        this.game.load.spritesheet('coin', 'assets/images/coin_copper.png', 32, 0, 8);
+        this.game.load.spritesheet('coin', 'assets/images/coin_copper.png', 32, 0, 16);
         this.game.load.spritesheet('fire-beam', 'assets/images/Fireball.png', 48, 0, 2);
         this.game.load.spritesheet('explosion-sprite', 'assets/images/explosion.png', 100, 100, 81);
         this.game.load.script('filter', 'https://cdn.rawgit.com/photonstorm/phaser/master/filters/Fire.js');

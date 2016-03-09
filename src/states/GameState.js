@@ -25,10 +25,9 @@ class GameState extends Phaser.State {
 		this.createControls();
 		this.createObjects();
 		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.manageCoins, this);
-		this.game.time.events.add(Phaser.Timer.SECOND * 1, this.manageSpike, this);
+		this.game.time.events.add(Phaser.Timer.SECOND * 1.2, this.manageSpike, this);
 		this.game.world.camera.position.set(0);
 		this.ui.onNormal.add(this.endPow, this);
-		this.dieOnce = true;
 		THISGAME = this;
 		this.player.playerDead.add(function(){
 			if(THISGAME.dieOnce){
@@ -37,7 +36,6 @@ class GameState extends Phaser.State {
 				THISGAME.game.state.start('GameOverState');
 			}
 		});
-		this.addQuake();
 	}
 	createObjects(){
 		this.world = new World(this.game);
@@ -51,9 +49,11 @@ class GameState extends Phaser.State {
 	}
 
 	declareVariables(){
-		this.spawnCoinsTime = 7;
 		this.score = 0;
 		this.flag = true;
+		this.dieOnce = true;
+		this.spawnCoinsTime = 7;
+		this.flagCoinUpdate = true;
 	}
 
 	createControls(){
@@ -74,7 +74,6 @@ class GameState extends Phaser.State {
 
 	manageSpike(){
 		this.spikes.spawnSpike();
-		this.coins.addObstacle(this.spikes._lastAlive.x);
 		let spawnSpikesTime = Math.floor(Math.random() * (TIME_SPIKE_MAX - TIME_SPIKE_MIN) + TIME_SPIKE_MIN);
 		this.game.time.events.add(Phaser.Timer.SECOND * spawnSpikesTime, this.manageSpike, this);	
 	}
@@ -85,6 +84,9 @@ class GameState extends Phaser.State {
 		this.score++;
 		//coin.coinPickUp.play();
 		this.ui.updateScore(this.score);
+		if(!this.flagCoinUpdate){
+			this.flagCoinUpdate = true;
+		}
 	}
 
 	activatePow(player, pow){
@@ -103,8 +105,6 @@ class GameState extends Phaser.State {
 
 	crashSpike(player, spike){
 		if(this.player.powerUp){
-			// let explosionIndex = Math.floor(Math.random() * this.explosionSounds.length);
-			// this.explosionSounds[explosionIndex].play();
 			this.explosions.spawnExplosion(spike);
 			spike.kill();
 		}else{
@@ -118,10 +118,19 @@ class GameState extends Phaser.State {
 			this.player.killPlayer();
 		}
 	}
+
+	updateCoinsPosition(coin, spike){
+		if(this.flagCoinUpdate){
+			this.flagCoinUpdate = false;
+			this.coins.addObstacle(spike.x);
+		}
+	}
 	//In this update we only define what will happen in the collisions of the objects
 	update(){
 		//this.game.world.bringToTop(this.player);
 		this.game.physics.arcade.collide(this.player, this.world);
+
+		this.game.physics.arcade.overlap(this.coins, this.spikes, this.updateCoinsPosition, null, this);
 		this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoins, null, this);
 		this.game.physics.arcade.overlap(this.player, this.spikes, this.crashSpike, null, this);
 		this.game.physics.arcade.overlap(this.player, this.pows, this.activatePow, null, this);
@@ -136,39 +145,13 @@ class GameState extends Phaser.State {
 	}
 
 	render(){
+		// this.coins.forEachAlive(this.renderGroup, this);
 		// if(this.spikes._lastAlive){
 		// 	this.game.debug.body(this.spikes._lastAlive);
 		// }
-		// if(this.explosions._lastAlive){
-		// 	this.game.debug.body(this.explosions._lastAlive);
-		// }
-		// this.game.debug.spriteInfo(this.spikes._lastAlive, 32, 32);
 	}
 
-	addQuake() {
- 		// define the camera offset for the quake
-		let rumbleOffset = 10;
-		// we need to move according to the camera's current position
-		let properties = {
-			x: this.game.camera.x - rumbleOffset
-		};
-		// we make it a relly fast movement
-		let duration = 100;
-		// because it will repeat
-		let repeat = 4;
-		// we use bounce in-out to soften it a little bit
-		let ease = Phaser.Easing.Bounce.InOut;
-		let autoStart = false;
-		// a little delay because we will run it indefinitely
-		let delay = 1000;
-		// we want to go back to the original position
-		let yoyo = true;
-		// this.quake = this.game.add.neonate(this.game.camera).to(properties, duration, ease, autoStart, delay, 4, yoyo);
-		// // we're using this line for the example to run indefinitely
-		// this.quake.onComplete.addOnce(this.addQuake);
-		// // let the earthquake begins
-		// this.quake.start();
-	}
+	renderGroup(member) {    this.game.debug.body(member); }
 
 }
 

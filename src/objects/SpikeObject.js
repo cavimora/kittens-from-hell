@@ -21,7 +21,7 @@ class SpikeObject extends Phaser.Group{
         	_spike.spikeCrash = game.add.audio('pickup');
 	        _spike.scale.setTo(0.15);
 	        _spike.anchor.setTo(1,1);
-			_spike.body.setSize(20, 48, -4.5, 0);
+			_spike.body.setSize(20, 38, -4.9, 0);
         	_spike.events.onKilled.add(function(spike){
         		//coin.coinPickUp.play();
         	});
