@@ -1,10 +1,9 @@
+import UI from '../objects/UIObject';
 class GameOverState extends Phaser.State{
-	preload(){
-
-	}
 	create(){
-
+		this.ui = new UI(this.game, 0);
 	}
+	
 	update(){
 		
 	}

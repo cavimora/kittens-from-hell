@@ -40,7 +40,7 @@ class GameState extends Phaser.State {
 	createObjects(){
 		this.world = new World(this.game);
 		this.coins = new Coins(this.game);		
-		this.ui = new UI(this.game, 0);
+		this.ui = new UI(this.game);
 		this.pows = new Pow(this.game);
 		this.explosions = new Explosion(this.game);
 		this.spikes = new Spike(this.game);
@@ -58,10 +58,11 @@ class GameState extends Phaser.State {
 
 	createControls(){
 		this.controls = this.game.input.keyboard.addKeys({
-            'space': Phaser.Keyboard.SPACEBAR, 
-            'Q': Phaser.Keyboard.Q, 
+			'Q': Phaser.Keyboard.Q, 
+			'A': Phaser.Keyboard.A,
             'up': Phaser.Keyboard.UP, 
             'down': Phaser.Keyboard.DOWN, 
+            'space': Phaser.Keyboard.SPACEBAR
         });
 	}
 
@@ -116,6 +117,8 @@ class GameState extends Phaser.State {
 			this.coins.setCoinSpeed(50);
 			this.spikes.setSpikeSpeed(50);
 			this.player.killPlayer();
+			this.ui.setDieded();
+			this.ui.addQuake(this.game);
 		}
 	}
 
@@ -142,12 +145,23 @@ class GameState extends Phaser.State {
         	this.pows.spawnPow();
         	this.flag = false;
         }  
+        // if(this.controls.Q.isUp && !this.flag){
+        // 	this.flag = true;
+        // }  
+        if(this.controls.A.isDown && this.flag){
+        	console.log(this.game.camera);
+        	this.ui.addQuake(this.game);
+        	this.flag = false;
+        }  
+        // if(this.controls.A.isUp && !this.flag){
+        // 	this.flag = true;
+        // }
 	}
 
 	render(){
 		// this.coins.forEachAlive(this.renderGroup, this);
 		// if(this.spikes._lastAlive){
-		// 	this.game.debug.body(this.spikes._lastAlive);
+			// this.game.debug.body(this.world.ground);
 		// }
 	}
 

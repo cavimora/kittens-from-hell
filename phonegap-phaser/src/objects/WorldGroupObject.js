@@ -6,7 +6,7 @@ class WorldGroupObject extends Phaser.Group{
 		this.ground = this.create(game.stage.width, game.stage.height, 'ground');
 		this.ground.body.immovable = true; 
 		this.ground.anchor.setTo(1, 1);
-		this.ground.body.setSize(600, 90, 0, 30);
+		this.ground.body.setSize(this.game.stage.width, 90, 0, 30);
 		this.add(this.bg);
 		this.add(this.ground);
 		this.tileSpeed = 1;
